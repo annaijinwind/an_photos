@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'dart:io';
+import 'package:ext_storage/ext_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photos/model/folder_data.dart';
 class FolderPage extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -19,23 +22,11 @@ class FolderPageWords extends StatefulWidget {
 
 class _FolderPageState extends State<FolderPageWords>
     with SingleTickerProviderStateMixin {
-  List menuList = [];
+  List<FolderData> folderList = [];
   @override
   void initState() {
     super.initState();
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
+    requestPermission().then((value) => readFromLocal());
   }
 
   @override
@@ -46,49 +37,106 @@ class _FolderPageState extends State<FolderPageWords>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: Container(
         child: CustomScrollView(
           slivers: <Widget>[
-            const SliverAppBar(
+            SliverAppBar(
               pinned: false,
               expandedHeight: 250.0,
               floating: false,
               snap: false,
-              backgroundColor: Colors.white,
               flexibleSpace: FlexibleSpaceBar(
-                title: Text('我的相册',style: TextStyle(color: Colors.black87),),
+                title: Text('我的相册'),
               ),
             ),
-            SliverGrid(
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 200.0,
-                mainAxisSpacing: 10.0,
-                crossAxisSpacing: 10.0,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                  return Container(
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: <Widget>[
-                        Container(
-                            margin: EdgeInsets.only(top: 16, left: 16),
-                            child: ClipOval(
-                              child: FadeInImage.assetNetwork(
-                                placeholder: 'assets/timg.jpg',
-                                image: 'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
-                              ),
-                            ))
-                      ],
-                    ),
-                  );
-                },
-                childCount: menuList.length,
+            SliverPadding(
+              padding: EdgeInsets.all(16.0),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200.0,
+                  crossAxisSpacing: 16.0,
+                  childAspectRatio: 0.75
+                ),
+                delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                    return GestureDetector(
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                                width: 200.0,
+                                height: 200.0,
+                                child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    child: Image.file(
+                                        File(folderList[index].icon),
+                                      fit: BoxFit.cover,
+                                    )
+                                )
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(top: 10),
+                              child: Text(folderList[index].name),
+                            ),
+                            Opacity(
+                                opacity: 0.6,
+                                child:Text(folderList[index].count.toString())
+                            )
+                          ],
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.of(context).pushNamed("/images");
+                      },
+                    );
+                  },
+                  childCount: folderList.length,
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+  Future<List<FileSystemEntity>> readFromLocal() async {
+    var path = await ExtStorage.getExternalStorageDirectory();
+    var directory = Directory(path).listSync();
+    setState(() {
+    });
+    for(var data in directory){
+     if(FileSystemEntity.isDirectorySync(data.path)){
+       FolderData foldData=new FolderData();
+       List<FileSystemEntity> childList=Directory(data.path).listSync();
+       foldData.count=childList.length;
+       List<FileSystemEntity> imageList=[];
+       for(var file in childList){
+         if(file.path.indexOf(".jpg")!=-1||
+             file.path.indexOf(".png")!=-1||
+             file.path.indexOf(".gif")!=-1){
+           imageList.add(file);
+         }
+       }
+       if(imageList.length>0){
+         foldData.name=data.path.split('/').last;
+         foldData.icon=imageList[0].path;
+         foldData.imageList=imageList;
+         setState(() {
+           folderList.add(foldData);
+         });
+       }
+     }
+    }
+    return Future.value(directory);
+  }
+  Future requestPermission() async {
+    // 申请权限
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.storage,
+    ].request();
+    if(statuses[Permission.storage]==PermissionStatus.granted){
+      return Future.value();
+    }
   }
 }
