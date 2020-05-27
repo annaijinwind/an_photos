@@ -53,9 +53,9 @@ class _FolderPageState extends State<FolderPageWords>
               padding: EdgeInsets.all(16.0),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200.0,
-                  crossAxisSpacing: 16.0,
-                  childAspectRatio: 0.75
+                    maxCrossAxisExtent: 200.0,
+                    crossAxisSpacing: 16.0,
+                    childAspectRatio: 0.75
                 ),
                 delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) {
@@ -71,7 +71,9 @@ class _FolderPageState extends State<FolderPageWords>
                                     borderRadius: BorderRadius.circular(10.0),
                                     child: Image.file(
                                         File(folderList[index].icon),
-                                      fit: BoxFit.cover,
+                                        fit: BoxFit.cover,
+                                        cacheHeight: 300,
+                                        filterQuality:FilterQuality.low
                                     )
                                 )
                             ),
@@ -87,7 +89,10 @@ class _FolderPageState extends State<FolderPageWords>
                         ),
                       ),
                       onTap: () {
-                        Navigator.of(context).pushNamed("/images");
+                        Navigator.of(context).pushNamed("/images",arguments:<String, Object>{
+                          'folderName': folderList[index].name,
+                          'imageList': folderList[index].imageList,
+                        });
                       },
                     );
                   },
@@ -106,27 +111,28 @@ class _FolderPageState extends State<FolderPageWords>
     setState(() {
     });
     for(var data in directory){
-     if(FileSystemEntity.isDirectorySync(data.path)){
-       FolderData foldData=new FolderData();
-       List<FileSystemEntity> childList=Directory(data.path).listSync();
-       foldData.count=childList.length;
-       List<FileSystemEntity> imageList=[];
-       for(var file in childList){
-         if(file.path.indexOf(".jpg")!=-1||
-             file.path.indexOf(".png")!=-1||
-             file.path.indexOf(".gif")!=-1){
-           imageList.add(file);
-         }
-       }
-       if(imageList.length>0){
-         foldData.name=data.path.split('/').last;
-         foldData.icon=imageList[0].path;
-         foldData.imageList=imageList;
-         setState(() {
-           folderList.add(foldData);
-         });
-       }
-     }
+      if(FileSystemEntity.isDirectorySync(data.path)){
+        FolderData foldData=new FolderData();
+        List<FileSystemEntity> childList=Directory(data.path).listSync();
+
+        List<FileSystemEntity> imageList=[];
+        for(var file in childList){
+          if(file.path.indexOf(".jpg")!=-1||
+              file.path.indexOf(".png")!=-1||
+              file.path.indexOf(".gif")!=-1){
+            imageList.add(file);
+          }
+        }
+        foldData.count=imageList.length;
+        if(imageList.length>0){
+          foldData.name=data.path.split('/').last;
+          foldData.icon=imageList[0].path;
+          foldData.imageList=imageList;
+          setState(() {
+            folderList.add(foldData);
+          });
+        }
+      }
     }
     return Future.value(directory);
   }

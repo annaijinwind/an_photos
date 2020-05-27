@@ -1,40 +1,45 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 class GalleryPage extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    var arg=ModalRoute.of(context).settings.arguments;
+    int position;
+    List<FileSystemEntity>imageList;
+    if(arg is Map){
+      Map<String,Object>data=arg;
+      position=data['position'];
+      imageList=data['imageList'];
+    }
     return Scaffold(
       body: Center(
-        child: GalleryPageWords(),
+        child: GalleryPageWords(position,imageList),
       ),
     );
   }
 }
 
 class GalleryPageWords extends StatefulWidget {
+  int position;
+  List<FileSystemEntity>imageList;
+  GalleryPageWords(this.position,this.imageList);
   @override
-  createState() => _GalleryPageState();
+  createState() => _GalleryPageState(position,imageList);
 }
 
 class _GalleryPageState extends State<GalleryPageWords>
     with SingleTickerProviderStateMixin {
-  List menuList = [];
+  int position;
+  List<FileSystemEntity>imageList;
+  _GalleryPageState(this.position,this.imageList);
   @override
   void initState() {
     super.initState();
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-    menuList.add('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
   }
 
   @override
@@ -45,22 +50,20 @@ class _GalleryPageState extends State<GalleryPageWords>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
       body: Container(
         child: PhotoViewGallery.builder(
           scrollPhysics: const BouncingScrollPhysics(),
+          pageController: PageController(initialPage: position),
           builder: (BuildContext context, int index) {
             return PhotoViewGalleryPageOptions(
-              maxScale: 3.0,
-              minScale: 0.5,
-              imageProvider: AssetImage("assets/timg.jpg"),
-
+              initialScale: PhotoViewComputedScale.contained,
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered,
+              imageProvider: FileImage(imageList[index]),
+              heroAttributes: PhotoViewHeroAttributes(tag: imageList[index].path),
             );
           },
-          itemCount: menuList.length,
+          itemCount: imageList.length,
           backgroundDecoration: BoxDecoration(color:Theme.of(context).scaffoldBackgroundColor),
           enableRotation: true,
           onPageChanged: (index){

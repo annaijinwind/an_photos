@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ImagesPage extends StatelessWidget {
@@ -17,77 +19,38 @@ class ImagesPage extends StatelessWidget {
   final String heroTag;
   @override
   Widget build(BuildContext context) {
+    var arg=ModalRoute.of(context).settings.arguments;
+    String folderName;
+    List<FileSystemEntity>imageList;
+    if(arg is Map){
+      Map<String,Object>data=arg;
+      folderName=data['folderName'];
+      imageList=data['imageList'];
+    }
     return Scaffold(
       body: Center(
-        child: ImagesPageWords(),
+        child: ImagesPageWords(folderName,imageList),
       ),
     );
   }
 }
 
 class ImagesPageWords extends StatefulWidget {
+  String folderName;
+  List<FileSystemEntity>imageList;
+  ImagesPageWords(this.folderName,this.imageList);
   @override
-  createState() => _ImagesPageState();
+  createState() => _ImagesPageState(folderName,imageList);
 }
 
 class _ImagesPageState extends State<ImagesPageWords>
     with SingleTickerProviderStateMixin {
-  List menuList = [];
+  String folderName;
+  List<FileSystemEntity>imageList;
+  _ImagesPageState(this.folderName,this.imageList);
   @override
   void initState() {
     super.initState();
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
-    menuList.add('aaa');
   }
 
   @override
@@ -106,7 +69,7 @@ class _ImagesPageState extends State<ImagesPageWords>
               floating: true,
               snap: false,
               flexibleSpace: FlexibleSpaceBar(
-                title: Text('我的相册'),
+                title: Text(folderName),
               ),
             ),
             SliverPadding(
@@ -115,7 +78,7 @@ class _ImagesPageState extends State<ImagesPageWords>
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 130.0,
                     crossAxisSpacing: 1.0,
-                    childAspectRatio: 0.99
+                    childAspectRatio: 0.98
                 ),
                 delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) {
@@ -126,21 +89,30 @@ class _ImagesPageState extends State<ImagesPageWords>
                           children: <Widget>[
                             Container(
                                 child: ClipRRect(
-                                    child: FadeInImage.assetNetwork(
-                                      placeholder: 'assets/timg.jpg',
-                                      image: 'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
-                                    )
+                                    child:Hero(tag: imageList[index].path, child: Image.file(
+                                      imageList[index],
+                                      fit: BoxFit.cover,
+                                      width: 110,
+                                      height: 110,
+                                      cacheHeight: 150,
+                                      errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+                                        return Image.asset("assets/timg.jpg",width: 110,height: 110);
+                                      },
+                                    ))
                                 )
                             ),
                           ],
                         ),
                       ),
                       onTap: (){
-                        Navigator.of(context).pushNamed("/gallery");
+                        Navigator.of(context).pushNamed("/gallery",arguments:<String, Object>{
+                          'position': index,
+                          'imageList': imageList,
+                        });
                       },
                     );
                   },
-                  childCount: menuList.length,
+                  childCount: imageList.length,
                 ),
               ),
             ),
