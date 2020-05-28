@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:ext_storage/ext_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photos/model/folder_data.dart';
+import 'package:photos/model/image_data.dart';
 class FolderPage extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -53,7 +54,7 @@ class _FolderPageState extends State<FolderPageWords>
               padding: EdgeInsets.all(16.0),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200.0,
+                    maxCrossAxisExtent: (MediaQuery.of(context).size.width/2),
                     crossAxisSpacing: 16.0,
                     childAspectRatio: 0.75
                 ),
@@ -65,14 +66,14 @@ class _FolderPageState extends State<FolderPageWords>
                         child: Column(
                           children: <Widget>[
                             Container(
-                                width: 200.0,
-                                height: 200.0,
+                                width: (MediaQuery.of(context).size.width/2)-16,
+                                height: (MediaQuery.of(context).size.width/2)-16,
                                 child: ClipRRect(
                                     borderRadius: BorderRadius.circular(10.0),
                                     child: Image.file(
-                                        File(folderList[index].icon),
+                                        folderList[index].icon,
                                         fit: BoxFit.cover,
-                                        cacheHeight: 300,
+                                        cacheHeight: (MediaQuery.of(context).size.width)~/2+100,
                                         filterQuality:FilterQuality.low
                                     )
                                 )
@@ -115,18 +116,21 @@ class _FolderPageState extends State<FolderPageWords>
         FolderData foldData=new FolderData();
         List<FileSystemEntity> childList=Directory(data.path).listSync();
 
-        List<FileSystemEntity> imageList=[];
+        List<ImageData> imageList=[];
         for(var file in childList){
           if(file.path.indexOf(".jpg")!=-1||
               file.path.indexOf(".png")!=-1||
               file.path.indexOf(".gif")!=-1){
-            imageList.add(file);
+            ImageData imageData=new ImageData();
+            imageData.data=file;
+            imageData.tag=file.path;
+            imageList.add(imageData);
           }
         }
         foldData.count=imageList.length;
         if(imageList.length>0){
           foldData.name=data.path.split('/').last;
-          foldData.icon=imageList[0].path;
+          foldData.icon=imageList[0].data;
           foldData.imageList=imageList;
           setState(() {
             folderList.add(foldData);

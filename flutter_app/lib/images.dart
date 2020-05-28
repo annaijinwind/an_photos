@@ -21,7 +21,7 @@ class ImagesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var arg=ModalRoute.of(context).settings.arguments;
     String folderName;
-    List<FileSystemEntity>imageList;
+    List imageList;
     if(arg is Map){
       Map<String,Object>data=arg;
       folderName=data['folderName'];
@@ -37,7 +37,7 @@ class ImagesPage extends StatelessWidget {
 
 class ImagesPageWords extends StatefulWidget {
   String folderName;
-  List<FileSystemEntity>imageList;
+  List imageList;
   ImagesPageWords(this.folderName,this.imageList);
   @override
   createState() => _ImagesPageState(folderName,imageList);
@@ -46,7 +46,7 @@ class ImagesPageWords extends StatefulWidget {
 class _ImagesPageState extends State<ImagesPageWords>
     with SingleTickerProviderStateMixin {
   String folderName;
-  List<FileSystemEntity>imageList;
+  List imageList;
   _ImagesPageState(this.folderName,this.imageList);
   @override
   void initState() {
@@ -89,12 +89,12 @@ class _ImagesPageState extends State<ImagesPageWords>
                           children: <Widget>[
                             Container(
                                 child: ClipRRect(
-                                    child:Hero(tag: imageList[index].path, child: Image.file(
-                                      imageList[index],
+                                    child:Hero(tag: imageList[index].tag, child: Image.file(
+                                      imageList[index].data,
                                       fit: BoxFit.cover,
-                                      width: 110,
-                                      height: 110,
-                                      cacheHeight: 150,
+                                      width: (MediaQuery.of(context).size.width)/4,
+                                      height: (MediaQuery.of(context).size.width)/4,
+                                      cacheHeight: (MediaQuery.of(context).size.width)~/2,
                                       errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
                                         return Image.asset("assets/timg.jpg",width: 110,height: 110);
                                       },
@@ -107,7 +107,7 @@ class _ImagesPageState extends State<ImagesPageWords>
                       onTap: (){
                         Navigator.of(context).pushNamed("/gallery",arguments:<String, Object>{
                           'position': index,
-                          'imageList': imageList,
+                          'imageList': imageList
                         });
                       },
                     );

@@ -10,7 +10,7 @@ class GalleryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var arg=ModalRoute.of(context).settings.arguments;
     int position;
-    List<FileSystemEntity>imageList;
+    List imageList;
     if(arg is Map){
       Map<String,Object>data=arg;
       position=data['position'];
@@ -26,7 +26,7 @@ class GalleryPage extends StatelessWidget {
 
 class GalleryPageWords extends StatefulWidget {
   int position;
-  List<FileSystemEntity>imageList;
+  List imageList;
   GalleryPageWords(this.position,this.imageList);
   @override
   createState() => _GalleryPageState(position,imageList);
@@ -35,7 +35,7 @@ class GalleryPageWords extends StatefulWidget {
 class _GalleryPageState extends State<GalleryPageWords>
     with SingleTickerProviderStateMixin {
   int position;
-  List<FileSystemEntity>imageList;
+  List imageList;
   _GalleryPageState(this.position,this.imageList);
   @override
   void initState() {
@@ -46,11 +46,14 @@ class _GalleryPageState extends State<GalleryPageWords>
   void dispose() {
     super.dispose();
   }
-
+//  Image.file(imageList[index],
+//  cacheWidth: (MediaQuery.of(context).size.width.toInt())*2),
+//  tag: index);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        color: Colors.black,
         child: PhotoViewGallery.builder(
           scrollPhysics: const BouncingScrollPhysics(),
           pageController: PageController(initialPage: position),
@@ -58,13 +61,14 @@ class _GalleryPageState extends State<GalleryPageWords>
             return PhotoViewGalleryPageOptions(
               initialScale: PhotoViewComputedScale.contained,
               minScale: PhotoViewComputedScale.contained,
-              maxScale: PhotoViewComputedScale.covered,
-              imageProvider: FileImage(imageList[index]),
-              heroAttributes: PhotoViewHeroAttributes(tag: imageList[index].path),
+              maxScale: 2.0,
+              imageProvider: ResizeImage(FileImage(imageList[index].data),
+              width:  (MediaQuery.of(context).size.width.toInt())*2
+              ),
+              heroAttributes: PhotoViewHeroAttributes(tag: imageList[index].tag),
             );
           },
           itemCount: imageList.length,
-          backgroundDecoration: BoxDecoration(color:Theme.of(context).scaffoldBackgroundColor),
           enableRotation: true,
           onPageChanged: (index){
             setState(() {
